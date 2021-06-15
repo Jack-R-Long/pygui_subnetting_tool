@@ -1,3 +1,6 @@
 # Exclude demo GUIs
 demo_fill_form.py
 hello_psg.py
+build/
+__pycache__/
+.vscode/
