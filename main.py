@@ -8,9 +8,10 @@ from PySimpleGUI.PySimpleGUI import Text
     Simple GUI to help our class subnet
 '''
 
-def main(subnetNumber = 4):
+def main(subnetNumber = 8):
     # sg.theme('TanBlue')
 
+    # Static inputs
     input_column = [
         [sg.Text('How many subnets do you need?')],
         [sg.InputText(subnetNumber, key='numSubnets'),
@@ -25,17 +26,9 @@ def main(subnetNumber = 4):
         ],
         [sg.Text('Subnet names'),
         sg.Text('Number of Hosts')],
-        [sg.Button('Exit')],
     ]
-    #  Add dynamically created list of subnets
-    for x in range(1, int(subnetNumber) + 1):
-        input_column.append(
-            [sg.InputText('Subnet' + str(x), key='subnet' + str(x)),
-            sg.InputText('', key='numHostsSubet' + str(x))
-            ]
-        )
-    input_column.append([sg.Button('Submit')])
-
+    
+    # Static outputs
     ouput_data_column = [
         [sg.Text("IP Address"),
         sg.Text(size=(40, 1), key="ipOut")],
@@ -44,6 +37,19 @@ def main(subnetNumber = 4):
         [sg.Text("Number of hosts"),
         sg.Text(size=(40, 1), key="numHostsOut")],
     ]
+    
+    # Dynamic Inputs and Outputs
+    for x in range(1, int(subnetNumber) + 1):
+        input_column.append(
+            [sg.InputText('Subnet' + str(x), key='subnet' + str(x)),
+            sg.InputText('0', key='numHostsSubnet' + str(x))
+            ]
+        )
+    input_column.append(
+        [sg.Button('Submit'),
+        sg.Button('Exit')]
+        )
+
 
     layout = [
         [
@@ -63,6 +69,7 @@ def main(subnetNumber = 4):
         
         elif event == "Submit":
             ipOut, subnetOut, numHostsOut = calculateSubnet(values['ipAddress'], values['netBits'])
+            vslmDict = calcualteVSLM(ipOut, values)
             window['ipOut'].update(ipOut)
             window['subnetOut'].update(subnetOut)
             window['numHostsOut'].update(numHostsOut)
@@ -83,6 +90,23 @@ def calculateSubnet(ip_address, netBits):
     print('Subnet ID:', subnet1)
     print('Number of possible hosts:', subnet1.num_addresses)
     return host1, subnet1, subnet1.num_addresses
+
+def calcualteVSLM(ipaddress, valuesDict):
+    """"
+    Caclulate variable length subnet masks for each desired subnet
+    """
+    numSubNets = int(valuesDict['numSubnets'])
+    subnetDict = {}
+    subnetList = []
+    for x in range(1, numSubNets + 1):
+        # print(valuesDict['subnet' + str(x)])
+        subnetDict[valuesDict['subnet' + str(x)]] = int(valuesDict['numHostsSubnet' + str(x)])
+        subnetTuple = (valuesDict['subnet' + str(x)], int(valuesDict['numHostsSubnet' + str(x)]))
+        subnetList.append(subnetTuple)
+    # Sort by number of hosts descending
+    # subnetDict = dict(sorted(subnetDict.items(), key=lambda item: item[1]))
+    subnetList.sort(key = lambda x: x[1], reverse=True)
+    print(subnetList)
 
 
 if __name__ == '__main__':
