@@ -2,22 +2,40 @@
 import PySimpleGUI as sg
 import ipaddress
 
+from PySimpleGUI.PySimpleGUI import Text
+
 '''
     Simple GUI to help our class subnet
 '''
 
-def main():
+def main(subnetNumber = 4):
     # sg.theme('TanBlue')
 
     input_column = [
-        [sg.Text('Enter your CIDR IP!', size=(30, 1), font=("Helvetica", 25))],
-        # [sg.Text('Here is some text.... and a place to enter text')],
-        [sg.InputText('192.0.2.1', key='ipAddress')],
+        [sg.Text('How many subnets do you need?')],
+        [sg.InputText(subnetNumber, key='numSubnets'),
+        sg.Button('Update')],
+        [sg.Text('Enter your CIDR IP!')],
+        [sg.InputText('192.0.2.1', key='ipAddress'),
         # sg.InputText('255.255.255.255', key='subnetMask')],
-        [sg.Combo(('/1', '/2', '/3', '/4', '/5', '/6', '/7', '/8', '/9', '/10', '/11', '/12', '/13', '/14', '/15', '/16', '/17', '/18', '/19', '/20', '/21', '/22', '/23', '/24', '/25', '/26', '/27', '/28', '/29', '/30', '/31', '/32'), key='netBits', size=(20, 1))],
-        [sg.Button('Submit')],
+        sg.Combo(
+            ['/' + str(x) for x in range(1, 33)],
+            key='netBits', 
+            size=(20, 1))
+        ],
+        [sg.Text('Subnet names'),
+        sg.Text('Number of Hosts')],
         [sg.Button('Exit')],
     ]
+    #  Add dynamically created list of subnets
+    for x in range(1, int(subnetNumber) + 1):
+        input_column.append(
+            [sg.InputText('Subnet' + str(x), key='subnet' + str(x)),
+            sg.InputText('', key='numHostsSubet' + str(x))
+            ]
+        )
+    input_column.append([sg.Button('Submit')])
+
     ouput_data_column = [
         [sg.Text("IP Address"),
         sg.Text(size=(40, 1), key="ipOut")],
@@ -35,12 +53,15 @@ def main():
         ]
     ]
 
-    window = sg.Window('Subnet Tool for Class 21015', layout, default_element_size=(40, 1), grab_anywhere=False)
+    window = sg.Window('VLSM Tool for Class 21015', layout, default_element_size=(40, 1), grab_anywhere=False)
 
     while True:
         event, values = window.read()
 
-        if event == "Submit":
+        if event == "Update":
+            main(values['numSubnets'])
+        
+        elif event == "Submit":
             ipOut, subnetOut, numHostsOut = calculateSubnet(values['ipAddress'], values['netBits'])
             window['ipOut'].update(ipOut)
             window['subnetOut'].update(subnetOut)
