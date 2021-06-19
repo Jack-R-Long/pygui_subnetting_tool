@@ -2,10 +2,6 @@
 from sys import prefix
 import PySimpleGUI as sg
 import ipaddress
-import random
-import string
-
-from PySimpleGUI.PySimpleGUI import Text
 
 '''
     Simple GUI to help our class subnet
@@ -82,7 +78,7 @@ def main(subnetNumber = 2):
         event, values = window.read()
 
         if event == "Update":
-            main(values['numSubnets'])
+            main(int(values['numSubnets']))
         
         elif event == "Submit":
             ipOut, subnetOut, numHostsOut = calculateSubnet(values['ipAddress'], values['netBits'])
@@ -128,6 +124,10 @@ def calcualteVSLM(startingSubnet, valuesDict):
         # Find host bits required.  Add 2 for the network and broadcast address
         hostBits = (subnetXList[1] + 2).bit_length()
         subnetXList.append(hostBits)
+        
+        netmask = '{:032b}'.format(8589934591)
+        hostBitsBinary = '{:032b}'.format(subnetXList[1])
+        print(8589934591 & hostBits)
     
     hostBits = (subnetList[0][1] + 2).bit_length()
     subnetCIDR = 32 - hostBits
@@ -137,16 +137,8 @@ def calcualteVSLM(startingSubnet, valuesDict):
     return subnetList
 
 # ------ Some functions to help generate data for the table ------
-def word():
-    return ''.join(random.choice(string.ascii_lowercase) for i in range(10))
-def number(max_val=1000):
-    return random.randint(0, max_val)
-
 def make_table(num_rows, num_cols, data = []):
     data = [[j for j in range(num_cols)] for i in range(num_rows)]
-    data[0] = [word() for __ in range(num_cols)]
-    for i in range(1, num_rows):
-        data[i] = [word(), *[number() for i in range(num_cols - 1)]]
     return data
 
 def fill_table(subnetList, num_rows, num_cols=6):
@@ -154,7 +146,7 @@ def fill_table(subnetList, num_rows, num_cols=6):
     outData = [[j for j in range(num_cols)] for i in range(num_rows)]
     # Assign subnet name and number of hosts
     for i in range(num_rows):
-        for j in range(3):
+        for j in range(len(subnetList[0])):
             outData[i][j] = subnetList[i][j]
     return subnetList
 
