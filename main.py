@@ -31,8 +31,8 @@ def main(subnetNumber = 8):
     ]
 
     # ------ Make the Table Data ------
-    data = make_table(num_rows=15, num_cols=6)
-    headings = [str(data[0][x])+'     ..' for x in range(len(data[0]))]
+    data = make_table(subnetNumber + 1, num_cols=6)
+    headings = ['Network Name', 'Hosts', 'Host Bits', 'Subnet Mask', 'Subnet ID', 'Broadcast Address']
     
     # Static outputs
     ouput_data_column = [
@@ -45,9 +45,9 @@ def main(subnetNumber = 8):
         [sg.Table(values=data[1:][:], headings=headings, max_col_width=25,
                     # background_color='light blue',
                     auto_size_columns=True,
-                    display_row_numbers=True,
-                    justification='right',
-                    num_rows=20,
+                    display_row_numbers=False,
+                    justification='center',
+                    num_rows=subnetNumber,
                     # alternating_row_color='lightyellow',
                     key='-TABLE-',
                     row_height=35,
@@ -110,18 +110,22 @@ def calculateSubnet(ip_address, netBits):
 def calcualteVSLM(ipaddress, valuesDict):
     """"
     Caclulate variable length subnet masks for each desired subnet
+    Return as a sorted list of tuples
     """
     numSubNets = int(valuesDict['numSubnets'])
-    subnetDict = {}
     subnetList = []
     for x in range(1, numSubNets + 1):
-        # print(valuesDict['subnet' + str(x)])
-        subnetDict[valuesDict['subnet' + str(x)]] = int(valuesDict['numHostsSubnet' + str(x)])
-        subnetTuple = (valuesDict['subnet' + str(x)], int(valuesDict['numHostsSubnet' + str(x)]))
-        subnetList.append(subnetTuple)
+        subnetX = [valuesDict['subnet' + str(x)], int(valuesDict['numHostsSubnet' + str(x)])]
+        subnetList.append(subnetX)
     # Sort by number of hosts descending
-    # subnetDict = dict(sorted(subnetDict.items(), key=lambda item: item[1]))
     subnetList.sort(key = lambda x: x[1], reverse=True)
+
+    # VSLM for each desired subnet
+    for subnetXList in subnetList:
+        # Find host bits required.  Add 2 for the network and broadcast address
+        hostBits = (subnetXList[1] + 2).bit_length()
+        subnetXList.append(hostBits)
+    
     print(subnetList)
 
 # ------ Some functions to help generate data for the table ------
@@ -130,12 +134,19 @@ def word():
 def number(max_val=1000):
     return random.randint(0, max_val)
 
-def make_table(num_rows, num_cols):
+def make_table(num_rows, num_cols, data = []):
     data = [[j for j in range(num_cols)] for i in range(num_rows)]
     data[0] = [word() for __ in range(num_cols)]
     for i in range(1, num_rows):
         data[i] = [word(), *[number() for i in range(num_cols - 1)]]
     return data
+
+def fill_table(subnetList, num_rows, num_cols=6):
+    # Init 2d data matrix
+    data = [[j for j in range(num_cols)] for i in range(num_rows)]
+    # Assign subnet name and number of hosts
+
+
 
 if __name__ == '__main__':
     main()
