@@ -1,4 +1,5 @@
 # Subnetting WOW app
+from sys import prefix
 import PySimpleGUI as sg
 import ipaddress
 import random
@@ -10,7 +11,7 @@ from PySimpleGUI.PySimpleGUI import Text
     Simple GUI to help our class subnet
 '''
 
-def main(subnetNumber = 8):
+def main(subnetNumber = 2):
     # sg.theme('TanBlue')
 
     # Static inputs
@@ -58,7 +59,7 @@ def main(subnetNumber = 8):
     for x in range(1, int(subnetNumber) + 1):
         input_column.append(
             [sg.InputText('Subnet' + str(x), key='subnet' + str(x)),
-            sg.InputText('0', key='numHostsSubnet' + str(x))
+            sg.InputText('250', key='numHostsSubnet' + str(x))
             ]
         )
     input_column.append(
@@ -85,7 +86,9 @@ def main(subnetNumber = 8):
         
         elif event == "Submit":
             ipOut, subnetOut, numHostsOut = calculateSubnet(values['ipAddress'], values['netBits'])
-            vslmDict = calcualteVSLM(ipOut, values)
+            vlsmList = calcualteVSLM(subnetOut, values)
+            newData = fill_table(vlsmList, subnetNumber)
+            window['-TABLE-'].update(values=newData)
             window['ipOut'].update(ipOut)
             window['subnetOut'].update(subnetOut)
             window['numHostsOut'].update(numHostsOut)
@@ -107,7 +110,7 @@ def calculateSubnet(ip_address, netBits):
     print('Number of possible hosts:', subnet1.num_addresses)
     return host1, subnet1, subnet1.num_addresses
 
-def calcualteVSLM(ipaddress, valuesDict):
+def calcualteVSLM(startingSubnet, valuesDict):
     """"
     Caclulate variable length subnet masks for each desired subnet
     Return as a sorted list of tuples
@@ -126,7 +129,12 @@ def calcualteVSLM(ipaddress, valuesDict):
         hostBits = (subnetXList[1] + 2).bit_length()
         subnetXList.append(hostBits)
     
-    print(subnetList)
+    hostBits = (subnetList[0][1] + 2).bit_length()
+    subnetCIDR = 32 - hostBits
+    # print(subnetCIDR)
+    # print(list(startingSubnet.subnets(new_prefix=subnetCIDR)))
+
+    return subnetList
 
 # ------ Some functions to help generate data for the table ------
 def word():
@@ -143,9 +151,12 @@ def make_table(num_rows, num_cols, data = []):
 
 def fill_table(subnetList, num_rows, num_cols=6):
     # Init 2d data matrix
-    data = [[j for j in range(num_cols)] for i in range(num_rows)]
+    outData = [[j for j in range(num_cols)] for i in range(num_rows)]
     # Assign subnet name and number of hosts
-
+    for i in range(num_rows):
+        for j in range(3):
+            outData[i][j] = subnetList[i][j]
+    return subnetList
 
 
 if __name__ == '__main__':
