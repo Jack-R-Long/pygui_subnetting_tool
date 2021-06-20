@@ -7,7 +7,7 @@ import ipaddress
     Simple GUI to help our class subnet
 '''
 
-def main(subnetNumber = 2):
+def main(subnetNumber = 8):
     # sg.theme('TanBlue')
 
     # Static inputs
@@ -125,15 +125,22 @@ def calcualteVSLM(startingSubnet, valuesDict):
         hostBits = (subnetXList[1] + 1).bit_length()
         subnetXList.append(hostBits)
         
-        # XOR of 255.255.255.255 and host id
-        netmask = ((2**32 - 1) ^ (2**(hostBits) - 1))
-        subnetXList.append(ipaddress.ip_address(netmask))
-    
-    hostBits = (subnetList[0][1] + 2).bit_length()
-    subnetCIDR = 32 - hostBits
-    # print(subnetCIDR)
-    # print(list(startingSubnet.subnets(new_prefix=subnetCIDR)))
+        # Get subnetmask | XOR of 255.255.255.255 and host id
+        netmask = ipaddress.IPv4Address(((2**32 - 1) ^ (2**(hostBits) - 1)))
+        subnetXList.append(netmask)
 
+        # Get network subnet ID
+        subnetID = ipaddress.IPv4Network(str(startingSubnet)[:-2] + str(netmask), strict=False)
+        subnetXList.append(subnetID)
+
+        # Get the brodcast addrress
+        bcastAddress = subnetID.broadcast_address
+        subnetXList.append(bcastAddress)
+
+        # Set new starting subnet
+        startingSubnet = ipaddress.ip_network(bcastAddress + 1)
+
+    # print(subnetList)
     return subnetList
 
 # ------ Some functions to help generate data for the table ------
