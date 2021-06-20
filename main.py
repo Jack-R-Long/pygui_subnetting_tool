@@ -122,12 +122,12 @@ def calcualteVSLM(startingSubnet, valuesDict):
     # VSLM for each desired subnet
     for subnetXList in subnetList:
         # Find host bits required.  Add 2 for the network and broadcast address
-        hostBits = (subnetXList[1] + 2).bit_length()
+        hostBits = (subnetXList[1] + 1).bit_length()
         subnetXList.append(hostBits)
         
-        netmask = '{:032b}'.format(8589934591)
-        hostBitsBinary = '{:032b}'.format(subnetXList[1])
-        print(8589934591 & hostBits)
+        # XOR of 255.255.255.255 and host id
+        netmask = ((2**32 - 1) ^ (2**(hostBits) - 1))
+        subnetXList.append(ipaddress.ip_address(netmask))
     
     hostBits = (subnetList[0][1] + 2).bit_length()
     subnetCIDR = 32 - hostBits
