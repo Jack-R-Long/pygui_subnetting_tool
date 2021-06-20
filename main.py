@@ -78,6 +78,7 @@ def main(subnetNumber = 8):
         event, values = window.read()
 
         if event == "Update":
+            window.close()
             main(int(values['numSubnets']))
         
         elif event == "Submit":
