@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['C:\\Users\\jackr\\Documents\\pygui_subnetting_tool'],
+             pathex=['C:\\Users\\jackr\\OneDrive\\Documents\\pygui_subnetting_tool'],
              binaries=[],
              datas=[],
              hiddenimports=[],
